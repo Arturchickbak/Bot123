@@ -1,0 +1,46 @@
+using System;
+using System.IO;
+using OfficeOpenXml;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+
+class Program
+{
+static void Main()
+{
+string chromeDriverPath = "C:\\Users\\bakuzov_as\\Desktop\\bot";
+string excelFilePath = "C:\\Users\\bakuzov_as\\Desktop\\botik\\bot2";
+
+using (IWebDriver driver = new ChromeDriver(chromeDriverPath))
+{
+ExcelPackage.LicenseContext = LicenseContext.Commercial;
+driver.Navigate().GoToUrl("https://volhovsky--lo.sudrf.ru/modules.php?name=sud_delo&srv_num=1&name_op=sf&delo_id=1540005"); // Замените "http://example.com" на адрес нужного сайта
+
+IWebElement inputField = driver.FindElement(By.Name("g1_case__CASE_NUMBERSS")); // Замените "caseNumberInput" на идентификатор поля ввода на сайте
+inputField.SendKeys("2-1551/2022"); // Замените "Номер_дела" на нужный номер дела
+
+IWebElement searchButton = driver.FindElement(By.ClassName("booton")); // Замените "searchButton" на идентификатор кнопки на сайте
+searchButton.Click();
+
+System.Threading.Thread.Sleep(5000); // Ожидание загрузки информации (пример)
+
+IWebElement informationElement = driver.FindElement(By.CssSelector("tbody")); // Замените ".information" на CSS-селектор элемента, содержащего информацию на сайте
+string information = informationElement.Text;
+
+if (!string.IsNullOrEmpty(information))
+{
+FileInfo excelFile = new FileInfo(excelFilePath);
+using (ExcelPackage package = new ExcelPackage(excelFile))
+{
+ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Изменения");
+int lastRow = worksheet.Dimension?.Rows ?? 0;
+worksheet.Cells[lastRow + 1, 1].Value = information;
+
+package.Save();
+}
+}
+
+driver.Quit();
+}
+}
+}
